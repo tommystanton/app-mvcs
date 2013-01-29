@@ -1,0 +1,10 @@
+---
+mirth:
+  server: ~
+  port: ~
+  username: ~
+  password: ~
+repository:
+  type: ~
+  url: ~
+# vim: syntax=:softtabstop=2:shiftwidth=2

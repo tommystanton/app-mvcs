@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use App::Mflow;
+
+use Getopt::Long;
+use English qw( -no_match_vars );
+use File::Basename qw( basename );
+
+Getopt::Long::Configure ("bundling");
+GetOptions(
+    'help|h' => \my $help,
+);
+
+check_args();
+
+# TODO Only support TUI?
+if ( scalar @ARGV ) {
+    my $mflow = App::Mflow->new;
+    $mflow->run(@ARGV);
+}
+else {
+    start_tui();
+}
+
+sub start_tui {
+    require App::Mflow::TUI;
+
+    my $tui = App::Mflow::TUI->new;
+    $tui->run;
+}
+
+# TODO Run TUI if there are no args
+sub check_args {
+    if ( $help ) {
+        my $usage = get_usage();
+        die $usage;
+    }
+}
+
+sub get_usage {
+    my $program_name = basename($PROGRAM_NAME);
+
+    my $usage = <<EOT;
+Usage: $program_name [COMMAND]
+If COMMAND is specified, run the specified mflow command.  Otherwise,
+start the text-user interface for interactive use.
+
+  -h,  --help                print this help information
+EOT
+
+    return $usage;
+}
+
+exit 0;

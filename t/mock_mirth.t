@@ -9,10 +9,17 @@ use Test::File;
 use Test::Fake::HTTPD 0.06 ();
 use Class::Monkey qw( Test::Fake::HTTPD );
 
+use Test::SVN::Repo ();
+
 use HTTP::Request::Params ();
+use File::chdir;
 use Path::Class ();
 use File::Temp ();
 use YAML::Syck qw( Dump );
+
+use App::Mflow::Util -svn;
+
+# TODO Check if "svn" is in $PATH (via App::Info?) and SKIP if so
 
 my $t_lib_dir = Path::Class::Dir->new('t/lib/mock_mirth/');
 
@@ -21,6 +28,10 @@ my $httpd = _get_httpd();
 
 ok( defined $httpd, 'Got a test HTTP server (HTTPS)' );
 
+my $svn_repo = Test::SVN::Repo->new;
+
+#_setup_repo( { svn_repo => $svn_repo } );
+
 my $config_file = File::Temp->new(
     DIR      => $t_lib_dir->stringify,
     TEMPLATE => 'mflow_test-XXXX',
@@ -28,8 +39,9 @@ my $config_file = File::Temp->new(
 );
 
 _generate_test_config_yaml_file({
-    httpd => $httpd,
-    file  => $config_file->filename,
+    httpd    => $httpd,
+    svn_repo => $svn_repo,
+    file     => $config_file->filename,
 });
 
 $ENV{MFLOW_CONFIG} = $config_file->filename;
@@ -63,10 +75,50 @@ foreach my $channel ( qw( foobar quux ) ) {
 
 done_testing;
 
-sub _generate_test_config_yaml_file {
+sub _setup_repo {
     my ($args) = @_;
-    my $httpd = $args->{httpd};
-    my $file  = $args->{file};
+    my $svn_repo = $args->{svn_repo};
+
+    my $path_to_checkout = File::Temp->newdir(
+            $t_lib_dir->subdir('svn_fixture_checkout-XXXX')->stringify
+        );
+    my $repo_checkout_dir =
+        Path::Class::Dir->new( $path_to_checkout->dirname );
+
+    svn_checkout({
+        url     => $svn_repo->url,
+        to_path => $repo_checkout_dir->stringify,
+    });
+
+    my $mirth_channel_fixtures = {
+        foobar         => _get_channel_fixture('foobar'),
+        quux           => _get_channel_fixture('quux'),
+        global_scripts => _get_global_scripts_fixture(),
+        code_templates => _get_code_templates_fixture(),
+    };
+
+    foreach my $channel ( keys %$mirth_channel_fixtures ) {
+        my $file = $repo_checkout_dir->file("${channel}.xml");
+
+        my $content = $mirth_channel_fixtures->{$channel};
+        $file->spew($content);
+    }
+
+    local $CWD = $repo_checkout_dir->stringify;
+    svn_add({
+        paths => [qw(
+            foobar.xml quux.xml
+            global_scripts.xml code_templates.xml
+        )]
+    });
+    svn_commit({ commit_msg => 'Initial commit of Mirth code' });
+}
+
+sub _generate_test_config_yaml_file {
+    my ($args)   = @_;
+    my $svn_repo = $args->{svn_repo};
+    my $httpd    = $args->{httpd};
+    my $file     = $args->{file};
 
     my ( $server, $port ) = split /:/, $httpd->host_port;
 
@@ -76,6 +128,10 @@ sub _generate_test_config_yaml_file {
             port     => $port,
             username => 'admin',
             password => 'admin',
+        },
+        repository => {
+            type => 'svn',
+            url  => $svn_repo->url,
         }
     };
 

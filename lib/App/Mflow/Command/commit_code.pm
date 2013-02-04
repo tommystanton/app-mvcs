@@ -10,7 +10,10 @@ use MooseX::Types::Path::Class::MoreCoercions qw( AbsDir );
 
 use WebService::Mirth ();
 use File::Temp ();
+use File::chdir;
 use Log::Minimal qw( infof );
+
+use App::Mflow::Util -svn;
 
 has code_checkout_path => (
     is      => 'ro',
@@ -37,16 +40,23 @@ has _mirth => (
 sub run {
     my ($self) = @_;
 
+    $self->checkout_repo;
     $self->export_mirth_channels;
-
-    #$self->stage_changes_in_repo;
-
-    #$self->revert_changes_in_repo;
+    #$self->stage_repo;
 
     #$self->view_diff;
     #$self->commit_changes_in_repo;
 
     return $self;
+}
+
+sub checkout_repo {
+    my ($self) = @_;
+
+    svn_checkout({
+        url     => $self->config->{repository}->{url},
+        to_path => $self->code_checkout_path,
+    });
 }
 
 sub export_mirth_channels {
@@ -59,7 +69,7 @@ sub export_mirth_channels {
 
     $self->_mirth->logout;
 
-    infof( 'Mirth channel files are in %s', $self->code_checkout_path );
+    #infof( 'Mirth channel files are in %s', $self->code_checkout_path );
 }
 
 sub _export_global_code {
@@ -82,10 +92,19 @@ sub _export_channel_code {
     });
 }
 
-sub stage_changes_in_repo {
+sub stage_repo {
     my ($self) = @_;
 
-    #$self->_check_for_renamed_channels;
+    my $channel_list = $self->_mirth->channel_list;
+
+    #$self->_check_for_renamed_channels($channel_list);
+
+    my @channel_names = keys %$channel_list;
+    my @channel_filenames = map {"${_}.xml"}
+        ( @channel_names, 'global_scripts', 'code_templates' );
+
+    local $CWD = $self->code_checkout_path;
+    svn_add({ paths => \@channel_filenames });
 }
 
 sub _check_for_renamed_channels {
@@ -93,11 +112,6 @@ sub _check_for_renamed_channels {
 
     # A renamed channel is effectively a file move: the filename
     # changes, but the ID value in the XML file should be the same.
-}
-
-sub revert_changes_in_repo {
-    my ($self) = @_;
-
 }
 
 sub view_diff {
@@ -108,6 +122,8 @@ sub view_diff {
 sub commit_changes_in_repo {
     my ($self) = @_;
 
+    local $CWD = $self->code_checkout_path;
+    svn_commit({ commit_msg => 'TODO Prompt for commit message' });
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::File;
+use Test::Deep;
 
 use Test::Fake::HTTPD 0.06 ();
 use Class::Monkey qw( Test::Fake::HTTPD );
@@ -54,24 +54,16 @@ use_ok($class);
 my $command = $class->new;
 $command->run();
 
-my $export_dir = $command->code_checkout_path;
-
-file_exists_ok(
-    "${export_dir}/global_scripts.xml",
-    "Global scripts have been exported"
+cmp_deeply(
+    {   'global_scripts.xml' => 'normal',
+        'code_templates.xml' => 'normal',
+        'foobar.xml'         => 'normal',
+        'quux.xml'           => 'normal',
+        '.'                  => 'normal',
+    },
+    svn_status( { path => $command->code_checkout_path } ),
+    'Channel files have been committed to SVN'
 );
-
-file_exists_ok(
-    "${export_dir}/code_templates.xml",
-    "Code templates have been exported"
-);
-
-foreach my $channel ( qw( foobar quux ) ) {
-    file_exists_ok(
-        "${export_dir}/${channel}.xml",
-        "$channel channel has been exported"
-    );
-}
 
 done_testing;
 

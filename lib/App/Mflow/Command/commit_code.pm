@@ -42,10 +42,10 @@ sub run {
 
     $self->checkout_repo;
     $self->export_mirth_channels;
-    #$self->stage_repo;
+    $self->stage_repo;
 
     #$self->view_diff;
-    #$self->commit_changes_in_repo;
+    $self->commit_changes_in_repo;
 
     return $self;
 }
@@ -95,18 +95,26 @@ sub _export_channel_code {
 sub stage_repo {
     my ($self) = @_;
 
-    $self->_mirth->login;
-    my $channel_list = $self->_mirth->channel_list;
-    $self->_mirth->logout;
+#    $self->_mirth->login;
+#    my $channel_list = $self->_mirth->channel_list;
+#    $self->_mirth->logout;
+#
+#    #$self->_check_for_renamed_channels($channel_list);
+#
+#    my @channel_names = keys %$channel_list;
+#    my @channel_filenames = map {"${_}.xml"}
+#        ( @channel_names, 'global_scripts', 'code_templates' );
 
-    #$self->_check_for_renamed_channels($channel_list);
+    my $statuses = svn_status({ path => $self->code_checkout_path });
 
-    my @channel_names = keys %$channel_list;
-    my @channel_filenames = map {"${_}.xml"}
-        ( @channel_names, 'global_scripts', 'code_templates' );
+    foreach my $filename ( keys %$statuses ) {
+        if ( $statuses->{$filename} eq 'unversioned' ) {
+            local $CWD = $self->code_checkout_path;
 
-    local $CWD = $self->code_checkout_path;
-    svn_add({ paths => \@channel_filenames });
+            my $file = $self->code_checkout_path->file($filename);
+            svn_add({ paths => [ $file->relative ] });
+        }
+    }
 }
 
 sub _check_for_renamed_channels {

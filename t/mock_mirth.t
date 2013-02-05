@@ -67,7 +67,7 @@ $command->checkout_repo;
         subhashof(
             svn_status( { path => $command->code_checkout_path } )
         ),
-        'Channel files are exported and unversioned to SVN'
+        'Channel files are exported and unversioned to Subversion'
     );
 }
 
@@ -83,7 +83,7 @@ $command->checkout_repo;
         subhashof(
             svn_status( { path => $command->code_checkout_path } )
         ),
-        'Channel files are staged for adding to SVN'
+        'Channel files are staged for adding to Subversion'
     );
 }
 
@@ -98,7 +98,7 @@ $command->checkout_repo;
             '.'                  => 'normal',
         },
         svn_status( { path => $command->code_checkout_path } ),
-        'Channel files have been committed to SVN'
+        'Channel files have been committed to Subversion'
     );
 }
 

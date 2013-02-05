@@ -52,18 +52,55 @@ my $class        = "App::Mflow::Command::${command_name}";
 use_ok($class);
 
 my $command = $class->new;
-$command->run();
 
-cmp_deeply(
-    {   'global_scripts.xml' => 'normal',
-        'code_templates.xml' => 'normal',
-        'foobar.xml'         => 'normal',
-        'quux.xml'           => 'normal',
-        '.'                  => 'normal',
-    },
-    svn_status( { path => $command->code_checkout_path } ),
-    'Channel files have been committed to SVN'
-);
+$command->checkout_repo;
+
+{
+    $command->export_mirth_channels;
+
+    cmp_deeply(
+        {   'global_scripts.xml' => 'unversioned',
+            'code_templates.xml' => 'unversioned',
+            'foobar.xml'         => 'unversioned',
+            'quux.xml'           => 'unversioned',
+        },
+        subhashof(
+            svn_status( { path => $command->code_checkout_path } )
+        ),
+        'Channel files are exported and unversioned to SVN'
+    );
+}
+
+{
+    $command->stage_repo;
+
+    cmp_deeply(
+        {   'global_scripts.xml' => 'added',
+            'code_templates.xml' => 'added',
+            'foobar.xml'         => 'added',
+            'quux.xml'           => 'added',
+        },
+        subhashof(
+            svn_status( { path => $command->code_checkout_path } )
+        ),
+        'Channel files are staged for adding to SVN'
+    );
+}
+
+{
+    $command->commit_changes_in_repo;
+
+    cmp_deeply(
+        {   'global_scripts.xml' => 'normal',
+            'code_templates.xml' => 'normal',
+            'foobar.xml'         => 'normal',
+            'quux.xml'           => 'normal',
+            '.'                  => 'normal',
+        },
+        svn_status( { path => $command->code_checkout_path } ),
+        'Channel files have been committed to SVN'
+    );
+}
 
 done_testing;
 

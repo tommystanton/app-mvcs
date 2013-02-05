@@ -95,7 +95,9 @@ sub _export_channel_code {
 sub stage_repo {
     my ($self) = @_;
 
+    $self->_mirth->login;
     my $channel_list = $self->_mirth->channel_list;
+    $self->_mirth->logout;
 
     #$self->_check_for_renamed_channels($channel_list);
 

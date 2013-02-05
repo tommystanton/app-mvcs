@@ -67,34 +67,19 @@ sub _build__svn_statuses {
 }
 
 sub svn_checkout {
-    my ( $url, $to_path, $dry_run ) = validated_list(
+    my ( $url, $to_path ) = validated_list(
         \@_,
         url     => { isa => 'Str' },
-        to_path => { isa => Dir, coerce => 1 },
-        dry_run => { isa => 'Bool', optional => 1 },
+        to_path => { isa => AbsDir, coerce => 1 },
     );
 
-    if ($dry_run) {
-        infof( "svn checkout: $url $to_path" );
-        return 1;
-    }
-
-    infof("wd: $CWD");
-
-    my @cmd = ( 'svn', 'checkout', $url, $to_path );
-    infof( '$ %s', ( join ' ', @cmd ) );
-
-    my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
-    if ( $success ) {
-        infof( 'svn checkout: %s', ( join ' ', $stdout, $stderr ) );
-        return 1;
-    }
-    else {
-        croakf( "svn checkout: $stderr" );
-        return 0;
-    }
-
-    return 0;
+    infof( 'Checking out repoistory at %s', $to_path );
+    __PACKAGE__->_svn->checkout(
+        $url,
+        $to_path->stringify,
+        'HEAD',
+        0,
+    );
 }
 
 sub svn_status {

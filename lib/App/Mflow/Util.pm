@@ -27,7 +27,7 @@ use Sub::Exporter -setup => {
     },
 };
 
-use Log::Minimal qw( infof warnf croakf );
+use Log::Minimal qw( debugf infof warnf croakf );
 $Log::Minimal::PRINT = sub {
     my ( $time, $type, $message, $trace, $raw_message ) = @_;
     print "$type: $message\n";
@@ -188,14 +188,14 @@ sub svn_mkdir {
         return 1;
     }
 
-    infof("wd: $CWD");
+    debugf("wd: $CWD");
 
     my @cmd = ( 'svn', 'mkdir', '--parents', $path );
-    infof( '$ %s', ( join ' ', @cmd ) );
+    debugf( '$ %s', ( join ' ', @cmd ) );
 
     my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
     if ( $success ) {
-        infof( 'svn mkdir: %s', ( join ' ', $stdout, $stderr ) );
+        debugf( 'svn mkdir: %s', ( join ' ', $stdout, $stderr ) );
         return 1;
     }
     else {
@@ -212,14 +212,14 @@ sub svn_add {
         paths => { isa => 'ArrayRef' },
     );
 
-    infof("wd: $CWD");
+    debugf("wd: $CWD");
 
     my @cmd = ( 'svn', 'add', @$paths );
-    infof( '$ %s', ( join ' ', @cmd ) );
+    debugf( '$ %s', ( join ' ', @cmd ) );
 
     my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
     if ( $success ) {
-        infof( 'svn add: %s', ( join ' ', $stdout, $stderr ) );
+        debugf( 'svn add: %s', ( join ' ', $stdout, $stderr ) );
         return 1;
     }
     else {
@@ -243,14 +243,14 @@ sub svn_commit {
         return 1;
     }
 
-    infof("wd: $CWD");
+    debugf("wd: $CWD");
 
     my @cmd = ( 'svn', 'commit', '-m', $commit_msg, @$paths );
-    infof( '$ %s', ( join ' ', @cmd[0..1], @cmd[4..$#cmd] ) );
+    debugf( '$ %s', ( join ' ', @cmd[0..1], @cmd[4..$#cmd] ) );
 
     my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
     if ( $success ) {
-        infof( 'svn commit: %s', ( join ' ', $stdout, $stderr ) );
+        debugf( 'svn commit: %s', ( join ' ', $stdout, $stderr ) );
         return 1;
     }
     else {
@@ -269,14 +269,14 @@ sub svn_revert {
         #dry_run    => { isa => 'Bool', optional => 1 },
     );
 
-    infof("wd: $CWD");
+    debugf("wd: $CWD");
 
     my @cmd = ( 'svn', 'revert', '--recursive', @$paths );
-    infof( '$ %s', ( join ' ', @cmd ) );
+    debugf( '$ %s', ( join ' ', @cmd ) );
 
     my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
     if ( $success ) {
-        infof( 'svn revert: %s', ( join ' ', $stdout, $stderr ) );
+        debugf( 'svn revert: %s', ( join ' ', $stdout, $stderr ) );
 
         if ($cleanup) {
             # TODO Remove unknown files

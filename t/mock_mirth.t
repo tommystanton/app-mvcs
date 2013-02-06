@@ -16,6 +16,7 @@ use File::chdir;
 use Path::Class ();
 use File::Temp ();
 use YAML::Syck qw( Dump );
+use Mojo::DOM ();
 
 use App::Mflow::Util -svn;
 
@@ -23,10 +24,8 @@ use App::Mflow::Util -svn;
 
 my $t_lib_dir = Path::Class::Dir->new('t/lib/mock_mirth/');
 
+our $Disable_foobar_Channel = 0;
 _monkey_patch_httpd();
-my $httpd = _get_httpd();
-
-ok( defined $httpd, 'Got a test HTTP server (HTTPS)' );
 
 my $svn_repo = Test::SVN::Repo->new;
 
@@ -38,12 +37,6 @@ my $config_file = File::Temp->new(
     SUFFIX   => '.yaml',
 );
 
-_generate_test_config_yaml_file({
-    httpd    => $httpd,
-    svn_repo => $svn_repo,
-    file     => $config_file->filename,
-});
-
 $ENV{MFLOW_CONFIG} = $config_file->filename;
 
 my $command_name = "commit_code";
@@ -51,11 +44,19 @@ my $class        = "App::Mflow::Command::${command_name}";
 
 use_ok($class);
 
-my $command = $class->new;
-
-$command->checkout_repo;
-
 {
+    my $httpd = _get_httpd();
+
+    _generate_test_config_yaml_file({
+        httpd    => $httpd,
+        svn_repo => $svn_repo,
+        file     => $config_file->filename,
+    });
+
+    my $command = $class->new;
+
+    $command->checkout_repo;
+
     $command->export_mirth_channels;
 
     cmp_deeply(
@@ -69,9 +70,7 @@ $command->checkout_repo;
         ),
         'Channel files are exported and unversioned to Subversion'
     );
-}
 
-{
     $command->stage_repo;
 
     cmp_deeply(
@@ -85,9 +84,7 @@ $command->checkout_repo;
         ),
         'Channel files are staged for adding to Subversion'
     );
-}
 
-{
     $command->commit_changes_in_repo;
 
     cmp_deeply(
@@ -99,6 +96,32 @@ $command->checkout_repo;
         },
         svn_status( { path => $command->code_checkout_path } ),
         'Channel files have been committed to Subversion'
+    );
+}
+
+{
+    local $Disable_foobar_Channel = 1;
+    diag('Disabling foobar channel this time...');
+    my $httpd = _get_httpd();
+
+    _generate_test_config_yaml_file({
+        httpd    => $httpd,
+        svn_repo => $svn_repo,
+        file     => $config_file->filename,
+    });
+
+    my $command = $class->new;
+
+    $command->checkout_repo;
+    $command->export_mirth_channels;
+    $command->stage_repo;
+
+    cmp_deeply(
+        { 'foobar.xml' => 'modified' },
+        subhashof(
+            svn_status( { path => $command->code_checkout_path } )
+        ),
+        'foobar channel appears modified to Subversion'
     );
 }
 
@@ -271,6 +294,18 @@ sub _get_httpd {
         }
         elsif ( $params->{op} eq 'getChannel' ) {
             my $foobar_xml = _get_channel_fixture('foobar');
+
+            # Hack to disable on-the-fly
+            if ($Disable_foobar_Channel) {
+                my $dom = Mojo::DOM->new(
+                    qq{<?xml version="1.0"?>\n$foobar_xml}
+                );
+                $dom->at('channel > enabled')
+                    ->replace_content('false');
+
+                $foobar_xml = $dom . '';
+            }
+
             my $quux_xml   = _get_channel_fixture('quux');
 
             my $channels_xml = <<"END_XML";

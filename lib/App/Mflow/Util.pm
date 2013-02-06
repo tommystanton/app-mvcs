@@ -3,16 +3,21 @@ use Moose;
 
 use MooseX::Params::Validate qw( validated_list );
 use MooseX::ClassAttribute;
-use MooseX::Types::Path::Class::MoreCoercions qw( AbsDir Dir );
+use MooseX::Types::Path::Class::MoreCoercions qw( AbsFile AbsDir Dir );
 
 use SVN::Client ();
 use Path::Class ();
+use File::Temp ();
 use File::chdir;
 use IO::CaptureOutput qw( capture_exec );
 use Text::Wrap qw( wrap ); $Text::Wrap::columns = 72;
 
 sub svn_functions {
-    map { "svn_${_}" } qw( checkout status add mkdir commit revert );
+    map { "svn_${_}" } qw(
+        checkout status diff
+        add      mkdir
+        commit   revert
+    );
 }
 
 use Sub::Exporter -setup => {
@@ -66,6 +71,36 @@ sub _build__svn_statuses {
     return \%statuses;
 }
 
+class_has _diff_output_file => (
+    is      => 'ro',
+    isa     => AbsFile,
+    coerce  => 1,
+    default => sub { __PACKAGE__->_temp_file_for_diff_output },
+    lazy    => 1,
+);
+
+class_has _temp_file_for_diff_output => (
+    is      => 'ro',
+    isa     => 'File::Temp',
+    default => sub { File::Temp->new( SUFFIX => '.diff' ) },
+    lazy    => 1,
+);
+
+class_has _diff_error_file => (
+    is      => 'ro',
+    isa     => AbsFile,
+    coerce  => 1,
+    default => sub { __PACKAGE__->_temp_file_for_diff_error },
+    lazy    => 1,
+);
+
+class_has _temp_file_for_diff_error => (
+    is      => 'ro',
+    isa     => 'File::Temp',
+    default => sub { File::Temp->new( TEMPLATE => 'error-XXXX' ) },
+    lazy    => 1,
+);
+
 sub svn_checkout {
     my ( $url, $to_path ) = validated_list(
         \@_,
@@ -107,6 +142,38 @@ sub svn_status {
     );
 
     return \%statuses;
+}
+
+sub svn_diff {
+    my ($path_to_diff) = validated_list(
+        \@_,
+        path => { isa => AbsFile, coerce => 1 },
+    );
+
+    __PACKAGE__->_svn->diff(
+        [],
+        $path_to_diff->stringify, 'HEAD',
+        $path_to_diff->stringify, 'WORKING',
+        1, 0, 0,
+        __PACKAGE__->_diff_output_file->stringify,
+        __PACKAGE__->_diff_error_file->stringify,
+    );
+
+    my ( $diff, $error );
+    # Couldn't use something like IO::String because if a filehandle is
+    # used, it must in fact be a real filehandle. :-/
+    # http://svn.haxx.se/dev/archive-2006-11/0125.shtml
+    # http://svn.haxx.se/dev/archive-2006-11/0126.shtml
+    # The workaround is to use temporary files, then read them into
+    # scalars.
+    $diff  = __PACKAGE__->_diff_output_file->slurp;
+    $error = __PACKAGE__->_diff_error_file->slurp;
+
+    if ($error) {
+        warnf( "svn diff: $error" );
+    }
+
+    return $diff;
 }
 
 sub svn_mkdir {

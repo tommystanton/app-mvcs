@@ -15,7 +15,7 @@ use Text::Wrap qw( wrap ); $Text::Wrap::columns = 72;
 sub svn_functions {
     map { "svn_${_}" } qw(
         checkout status diff
-        add      mkdir
+        add      move   mkdir
         commit   revert
     );
 }
@@ -136,6 +136,11 @@ sub svn_status {
             my $rel_path = Path::Class::File->new($svn_path)
                                             ->relative($abs_path);
 
+            if ( $status->copied ) {
+                # In actuality, this is "addition-with-history,"
+                # resulting from an 'svn copy' or from an 'svn move'
+                $status_name = 'copied';
+            }
             $statuses{$rel_path} = $status_name;
         },
         0, 1, 1, 0
@@ -228,6 +233,36 @@ sub svn_add {
     }
 
     return 0;
+}
+
+sub svn_move {
+    my ($from, $to) = validated_list(
+        \@_,
+        from => { isa => AbsFile, coerce => 1 },
+        to   => { isa => AbsFile, coerce => 1 },
+    );
+
+    my $unstaged_move_content = sub {
+        my $content;
+
+        if ( -e $to->stringify ) {
+            $content = $to->slurp;
+            unlink $to->stringify; # XXX Shouldn't need to do this
+        }
+
+        return $content;
+    }->();
+
+    __PACKAGE__->_svn->move(
+        $from->stringify,
+        undef,
+        $to->stringify,
+        1,
+    );
+
+    if ($unstaged_move_content) {
+        $to->spew($unstaged_move_content);
+    }
 }
 
 sub svn_commit {

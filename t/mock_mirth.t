@@ -25,6 +25,7 @@ use App::Mflow::Util -svn;
 my $t_lib_dir = Path::Class::Dir->new('t/lib/mock_mirth/');
 
 our $Disable_foobar_Channel = 0;
+our $Rename_quux_Channel = 0;
 _monkey_patch_httpd();
 
 my $svn_repo = Test::SVN::Repo->new;
@@ -122,6 +123,36 @@ use_ok($class);
             svn_status( { path => $command->code_checkout_path } )
         ),
         'foobar channel appears modified to Subversion'
+    );
+
+    $command->commit_changes_in_repo;
+}
+
+{
+    local $Rename_quux_Channel = 1;
+    diag('Renaming the quux channel this time...');
+    my $httpd = _get_httpd();
+
+    _generate_test_config_yaml_file({
+        httpd    => $httpd,
+        svn_repo => $svn_repo,
+        file     => $config_file->filename,
+    });
+
+    my $command = $class->new;
+
+    $command->checkout_repo;
+    $command->export_mirth_channels;
+    $command->stage_repo;
+
+    cmp_deeply(
+        {   'quux.xml' => 'deleted',
+            'baz.xml'  => 'copied',
+        },
+        subhashof(
+            svn_status( { path => $command->code_checkout_path } )
+        ),
+        'quux channel appears as moved to baz to Subversion'
     );
 }
 
@@ -307,6 +338,15 @@ sub _get_httpd {
             }
 
             my $quux_xml   = _get_channel_fixture('quux');
+            if ($Rename_quux_Channel) {
+                my $dom = Mojo::DOM->new(
+                    qq{<?xml version="1.0"?>\n$quux_xml}
+                );
+                $dom->at('channel > name')
+                    ->replace_content('baz');
+
+                $quux_xml = $dom . '';
+            }
 
             my $channels_xml = <<"END_XML";
 <list>

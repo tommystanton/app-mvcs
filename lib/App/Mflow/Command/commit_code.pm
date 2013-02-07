@@ -6,7 +6,8 @@ extends 'App::Mflow::Command';
 
 # ABSTRACT: Export channels from a Mirth Connect box, commit to repository
 
-use MooseX::Types::Path::Class::MoreCoercions qw( AbsDir );
+use MooseX::Params::Validate qw( validated_list );
+use MooseX::Types::Path::Class::MoreCoercions qw( File AbsDir );
 
 use WebService::Mirth ();
 use File::Temp ();
@@ -119,10 +120,34 @@ sub _check_for_renamed_channels {
 
     for (@$channels_to_move) {
         local $CWD = $self->code_checkout_path;
-        svn_move({
+        $self->_do_move_for_channel_rename({
             from => $_->{from} . '.xml',
             to   => $_->{to}   . '.xml',
         });
+    }
+}
+
+sub _do_move_for_channel_rename {
+    my $self = shift;
+    my ($from, $to) = validated_list(
+        \@_,
+        from => { isa => File, coerce => 1 },
+        to   => { isa => File, coerce => 1 },
+    );
+
+    my $unstaged_move_content = sub {
+        my $content = $to->slurp;
+        unlink $to->stringify;
+
+        return $content;
+    }->();
+
+    svn_move( { from => $from, to => $to } );
+
+    if ($unstaged_move_content) {
+        # Overwrite with the newest content, preserving the working copy
+        # status from 'svn move'
+        $to->spew($unstaged_move_content);
     }
 }
 

@@ -242,27 +242,12 @@ sub svn_move {
         to   => { isa => AbsFile, coerce => 1 },
     );
 
-    my $unstaged_move_content = sub {
-        my $content;
-
-        if ( -e $to->stringify ) {
-            $content = $to->slurp;
-            unlink $to->stringify; # XXX Shouldn't need to do this
-        }
-
-        return $content;
-    }->();
-
     __PACKAGE__->_svn->move(
         $from->stringify,
         undef,
         $to->stringify,
-        1,
+        0
     );
-
-    if ($unstaged_move_content) {
-        $to->spew($unstaged_move_content);
-    }
 }
 
 sub svn_commit {

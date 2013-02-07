@@ -85,7 +85,9 @@ use_ok($class);
         'Channel files are staged for adding to Subversion'
     );
 
-    $command->commit_changes_in_repo;
+    $command->commit_changes_in_repo({
+        commit_msg_coderef => sub {'Initial commit of channels'}
+    });
 
     cmp_deeply(
         svn_status( { path => $command->code_checkout_path } ),
@@ -122,7 +124,9 @@ use_ok($class);
         'foobar channel appears modified to Subversion'
     );
 
-    $command->commit_changes_in_repo;
+    $command->commit_changes_in_repo({
+        commit_msg_coderef => sub {'Disabled foobar'}
+    });
 
     cmp_deeply(
         svn_status( { path => $command->code_checkout_path } ),
@@ -164,7 +168,9 @@ use_ok($class);
         'quux channel appears as moved to baz to Subversion'
     );
 
-    $command->commit_changes_in_repo;
+    $command->commit_changes_in_repo({
+        commit_msg_coderef => sub {'Channel rename: quux --> baz'}
+    });
 
     cmp_deeply(
         svn_status( { path => $command->code_checkout_path } ),

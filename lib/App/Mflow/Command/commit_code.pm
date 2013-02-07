@@ -13,6 +13,8 @@ use WebService::Mirth ();
 use File::Temp ();
 use Path::Class ();
 use File::chdir;
+use Module::Runtime qw( require_module );
+use Try::Tiny;
 use Log::Minimal qw( infof );
 
 use App::Mflow::Util -svn;
@@ -236,10 +238,38 @@ sub view_diff {
 }
 
 sub commit_changes_in_repo {
-    my ($self) = @_;
+    my $self = shift;
+    my ($commit_msg_coderef) = validated_list(
+        \@_,
+        commit_msg_coderef => {
+            isa     => 'CodeRef',
+            default => sub {
+                # Got idea from App::Adenosine::Plugin::Rainbow ;)
+                try {
+                    require_module('IO::Prompt');
+                } catch {
+                    die <<EOT
+The default prompting uses IO::Prompt, which is not currently installed.
+Install IO::Prompt, or return a string inside of a subroutine for the
+"commit_msg_coderef" argument to this method.
+EOT
+                }
+
+                chomp (my $prompt_text = <<EOT);
+Enter a commit message:
+> 
+EOT
+                my $commit_msg = prompt($prompt_text) . '';
+
+                return $commit_msg;
+            },
+        },
+    );
+
+    my $commit_msg = $commit_msg_coderef->();
 
     local $CWD = $self->code_checkout_path;
-    svn_commit({ commit_msg => 'TODO Prompt for commit message' });
+    svn_commit({ commit_msg => $commit_msg });
 }
 
 __PACKAGE__->meta->make_immutable;

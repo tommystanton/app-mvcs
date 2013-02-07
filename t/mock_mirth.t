@@ -75,27 +75,26 @@ use_ok($class);
     $command->stage_repo;
 
     cmp_deeply(
-        {   'global_scripts.xml' => 'added',
+        svn_status( { path => $command->code_checkout_path } ),
+        superhashof({
+            'global_scripts.xml' => 'added',
             'code_templates.xml' => 'added',
             'foobar.xml'         => 'added',
             'quux.xml'           => 'added',
-        },
-        subhashof(
-            svn_status( { path => $command->code_checkout_path } )
-        ),
+        }),
         'Channel files are staged for adding to Subversion'
     );
 
     $command->commit_changes_in_repo;
 
     cmp_deeply(
+        svn_status( { path => $command->code_checkout_path } ),
         {   'global_scripts.xml' => 'normal',
             'code_templates.xml' => 'normal',
             'foobar.xml'         => 'normal',
             'quux.xml'           => 'normal',
             '.'                  => 'normal',
         },
-        svn_status( { path => $command->code_checkout_path } ),
         'Channel files have been committed to Subversion'
     );
 }
@@ -118,10 +117,8 @@ use_ok($class);
     $command->stage_repo;
 
     cmp_deeply(
-        { 'foobar.xml' => 'modified' },
-        subhashof(
-            svn_status( { path => $command->code_checkout_path } )
-        ),
+        svn_status( { path => $command->code_checkout_path } ),
+        superhashof( { 'foobar.xml' => 'modified' } ),
         'foobar channel appears modified to Subversion'
     );
 
@@ -146,12 +143,11 @@ use_ok($class);
     $command->stage_repo;
 
     cmp_deeply(
-        {   'quux.xml' => 'deleted',
+        svn_status( { path => $command->code_checkout_path } ),
+        superhashof({
+            'quux.xml' => 'deleted',
             'baz.xml'  => 'copied',
-        },
-        subhashof(
-            svn_status( { path => $command->code_checkout_path } )
-        ),
+        }),
         'quux channel appears as moved to baz to Subversion'
     );
 }

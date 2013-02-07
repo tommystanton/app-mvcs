@@ -123,6 +123,17 @@ use_ok($class);
     );
 
     $command->commit_changes_in_repo;
+
+    cmp_deeply(
+        svn_status( { path => $command->code_checkout_path } ),
+        {   'global_scripts.xml' => 'normal',
+            'code_templates.xml' => 'normal',
+            'foobar.xml'         => 'normal',
+            'quux.xml'           => 'normal',
+            '.'                  => 'normal',
+        },
+        'Channel files have been committed to Subversion'
+    );
 }
 
 {
@@ -149,6 +160,19 @@ use_ok($class);
             'baz.xml'  => 'copied',
         }),
         'quux channel appears as moved to baz to Subversion'
+    );
+
+    $command->commit_changes_in_repo;
+
+    cmp_deeply(
+        svn_status( { path => $command->code_checkout_path } ),
+        {   'global_scripts.xml' => 'normal',
+            'code_templates.xml' => 'normal',
+            'foobar.xml'         => 'normal',
+            'baz.xml'            => 'normal',
+            '.'                  => 'normal',
+        },
+        'Channel files have been committed to Subversion'
     );
 }
 

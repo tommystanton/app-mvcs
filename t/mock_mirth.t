@@ -139,6 +139,7 @@ use_ok($class);
 {
     local $Rename_quux_Channel = 1;
     diag('Renaming the quux channel this time...');
+    local $Disable_foobar_Channel = 1; # (Leave foobar disabled)
     my $httpd = _get_httpd();
 
     _generate_test_config_yaml_file({
@@ -156,8 +157,9 @@ use_ok($class);
     cmp_deeply(
         svn_status( { path => $command->code_checkout_path } ),
         superhashof({
-            'quux.xml' => 'deleted',
-            'baz.xml'  => 'copied',
+            'foobar.xml' => 'normal',
+            'quux.xml'   => 'deleted',
+            'baz.xml'    => 'copied',
         }),
         'quux channel appears as moved to baz to Subversion'
     );

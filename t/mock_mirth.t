@@ -103,7 +103,7 @@ use_ok($class);
 }
 
 {
-    local $Disable_foobar_Channel = 1;
+    $Disable_foobar_Channel = 1;
     diag('Disabling foobar channel this time...');
     my $httpd = _get_httpd();
 
@@ -142,9 +142,8 @@ use_ok($class);
 }
 
 {
-    local $Rename_quux_Channel = 1;
+    $Rename_quux_Channel = 1;
     diag('Renaming the quux channel this time...');
-    local $Disable_foobar_Channel = 1; # (Leave foobar disabled)
     my $httpd = _get_httpd();
 
     _generate_test_config_yaml_file({
@@ -186,10 +185,8 @@ use_ok($class);
 }
 
 {
-    local $Delete_foobar_Channel = 1;
+    $Delete_foobar_Channel = 1;
     diag('Deleting the quux channel this time...');
-    local $Disable_foobar_Channel = 1; # (Leave foobar disabled)
-    local $Rename_quux_Channel = 1; # (Leave quux renamed)
     my $httpd = _get_httpd();
 
     _generate_test_config_yaml_file({

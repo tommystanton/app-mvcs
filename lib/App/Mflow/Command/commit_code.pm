@@ -97,7 +97,7 @@ sub _export_channel_code {
 sub stage_repo {
     my ($self) = @_;
 
-    $self->_check_for_renamed_channels;
+    $self->_check_for_deleted_channels;
 
     my $statuses = svn_status({ path => $self->code_checkout_path });
 
@@ -111,22 +111,41 @@ sub stage_repo {
     }
 }
 
-# A renamed channel is effectively a file move: the filename changes,
-# but the ID value in the XML file should be the same.
-sub _check_for_renamed_channels {
+sub _check_for_deleted_channels {
     my ($self) = @_;
 
-    my $channels_to_move = $self->_get_list_of_renamed_channels;
+    my $channel_deletes = $self->_get_list_of_deleted_channels;
 
-    for (@$channels_to_move) {
+    for (@$channel_deletes) {
         local $CWD = $self->code_checkout_path;
-        $self->_do_move_for_channel_rename({
-            from => $_->{from} . '.xml',
-            to   => $_->{to}   . '.xml',
-        });
+
+        if ( defined $_->{from} and defined $_->{to} ) {
+            $self->_do_move_for_channel_rename({
+                from => $_->{from} . '.xml',
+                to   => $_->{to}   . '.xml',
+            });
+        }
+        elsif ( defined $_->{from} and not defined $_->{to} ) {
+            $self->_do_remove_for_channel_delete({
+                file => $_->{from} . '.xml',
+            });
+        }
     }
 }
 
+sub _do_remove_for_channel_delete {
+    my $self = shift;
+    my ($file) = validated_list(
+        \@_,
+        file => { isa => File, coerce => 1 },
+    );
+
+    local $CWD = $self->code_checkout_path;
+    svn_remove( { targets => [ $file->stringify ] } );
+}
+
+# A renamed channel is effectively a file move: the filename changes,
+# but the ID value in the XML file should be the same.
 sub _do_move_for_channel_rename {
     my $self = shift;
     my ($from, $to) = validated_list(
@@ -151,7 +170,7 @@ sub _do_move_for_channel_rename {
     }
 }
 
-sub _get_list_of_renamed_channels {
+sub _get_list_of_deleted_channels {
     my ($self) = @_;
 
     my %local  = %{ $self->_get_local_channel_list };
@@ -184,7 +203,7 @@ sub _get_list_of_renamed_channels {
 
         push @$channel_renames, {
             from => $old->{name},
-            to   => $new->{name},
+            to   => $new->{name}, # (Can be undef, meaning only delete)
         };
     }
 

@@ -26,6 +26,7 @@ my $t_lib_dir = Path::Class::Dir->new('t/lib/mock_mirth/');
 
 our $Disable_foobar_Channel = 0;
 our $Rename_quux_Channel = 0;
+our $Delete_foobar_Channel = 0;
 _monkey_patch_httpd();
 
 my $svn_repo = Test::SVN::Repo->new;
@@ -177,6 +178,49 @@ use_ok($class);
         {   'global_scripts.xml' => 'normal',
             'code_templates.xml' => 'normal',
             'foobar.xml'         => 'normal',
+            'baz.xml'            => 'normal',
+            '.'                  => 'normal',
+        },
+        'Channel files have been committed to Subversion'
+    );
+}
+
+{
+    local $Delete_foobar_Channel = 1;
+    diag('Deleting the quux channel this time...');
+    local $Disable_foobar_Channel = 1; # (Leave foobar disabled)
+    local $Rename_quux_Channel = 1; # (Leave quux renamed)
+    my $httpd = _get_httpd();
+
+    _generate_test_config_yaml_file({
+        httpd    => $httpd,
+        svn_repo => $svn_repo,
+        file     => $config_file->filename,
+    });
+
+    my $command = $class->new;
+
+    $command->checkout_repo;
+    $command->export_mirth_channels;
+    $command->stage_repo;
+
+    cmp_deeply(
+        svn_status( { path => $command->code_checkout_path } ),
+        superhashof({
+            'foobar.xml' => 'deleted',
+            'baz.xml'    => 'normal',
+        }),
+        'foobar channel appears as deleted to baz to Subversion'
+    );
+
+    $command->commit_changes_in_repo({
+        commit_msg_coderef => sub {'Delete foobar'}
+    });
+
+    cmp_deeply(
+        svn_status( { path => $command->code_checkout_path } ),
+        {   'global_scripts.xml' => 'normal',
+            'code_templates.xml' => 'normal',
             'baz.xml'            => 'normal',
             '.'                  => 'normal',
         },
@@ -363,6 +407,9 @@ sub _get_httpd {
                     ->replace_content('false');
 
                 $foobar_xml = $dom . '';
+            }
+            if ($Delete_foobar_Channel) {
+                $foobar_xml = '';
             }
 
             my $quux_xml   = _get_channel_fixture('quux');

@@ -15,7 +15,7 @@ use Text::Wrap qw( wrap ); $Text::Wrap::columns = 72;
 sub svn_functions {
     map { "svn_${_}" } qw(
         checkout status diff
-        add      move   mkdir
+        add      move   remove mkdir
         commit   revert
     );
 }
@@ -233,6 +233,18 @@ sub svn_add {
     }
 
     return 0;
+}
+
+sub svn_remove {
+    my ($targets) = validated_list(
+        \@_,
+        targets => { isa => 'ArrayRef' },
+    );
+
+    __PACKAGE__->_svn->delete(
+        @$targets,
+        0
+    );
 }
 
 sub svn_move {

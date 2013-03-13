@@ -254,7 +254,7 @@ sub commit_changes_in_repo {
         \@_,
         commit_msg_coderef => {
             isa     => 'CodeRef',
-            default => sub {'Committing channels'},
+            default => sub {'Export Mirth channels'},
         },
     );
 

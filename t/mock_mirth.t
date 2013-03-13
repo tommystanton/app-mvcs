@@ -207,7 +207,7 @@ use_ok($class);
             'foobar.xml' => 'deleted',
             'baz.xml'    => 'normal',
         }),
-        'foobar channel appears as deleted to baz to Subversion'
+        'foobar channel appears as deleted to Subversion'
     );
 
     $command->commit_changes_in_repo({

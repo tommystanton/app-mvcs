@@ -64,12 +64,8 @@ sub checkout_repo {
 sub export_mirth_channels {
     my ($self) = @_;
 
-    $self->_mirth->login;
-
     $self->_export_global_code;
     $self->_export_channel_code;
-
-    $self->_mirth->logout;
 
     #infof( 'Mirth channel files are in %s', $self->code_checkout_path );
 }
@@ -242,9 +238,7 @@ sub _get_local_channel_list {
 sub _get_remote_channel_list {
     my ($self) = @_;
 
-    $self->_mirth->login;
     my $channel_list = $self->_mirth->channel_list;
-    $self->_mirth->logout;
 
     return $channel_list;
 }

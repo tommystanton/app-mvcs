@@ -4,7 +4,6 @@ use namespace::autoclean;
 
 extends 'App::Mflow::Base';
 
-use Config::ZOMG;
 use Class::Load qw( load_class );
 
 sub run {

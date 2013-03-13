@@ -46,7 +46,6 @@ sub run {
     $self->export_mirth_channels;
     $self->stage_repo;
 
-    #$self->view_diff;
     $self->commit_changes_in_repo;
 
     return $self;
@@ -241,11 +240,6 @@ sub _get_remote_channel_list {
     my $channel_list = $self->_mirth->channel_list;
 
     return $channel_list;
-}
-
-sub view_diff {
-    my ($self) = @_;
-
 }
 
 sub commit_changes_in_repo {

@@ -9,12 +9,12 @@ use Class::Load qw( load_class );
 sub run {
     my ( $self, $command, @args ) = @_;
 
-    $command = $self->_build_command($command);
+    $command = $self->get_command($command);
 
     $command->run(@args);
 }
 
-sub _build_command {
+sub get_command {
     my ( $self, $command ) = @_;
 
     my $class = join '::', __PACKAGE__, 'Command', $command;

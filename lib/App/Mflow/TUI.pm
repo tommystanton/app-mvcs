@@ -59,7 +59,7 @@ sub _prompt_through_commit_code {
 
         if ( confirm('Does the diff look correct?') ) {
             $command->commit_changes_in_repo({
-                commit_msg_coderef => sub { ask('Enter a commit message:'); }
+                commit_msg => ask('Enter a commit message:')
             });
         }
         else {

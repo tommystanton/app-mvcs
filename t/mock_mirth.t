@@ -87,7 +87,7 @@ use_ok($class);
     );
 
     $command->commit_changes_in_repo({
-        commit_msg_coderef => sub {'Initial commit of channels'}
+        commit_msg => 'Initial commit of channels'
     });
 
     cmp_deeply(
@@ -126,7 +126,7 @@ use_ok($class);
     );
 
     $command->commit_changes_in_repo({
-        commit_msg_coderef => sub {'Disabled foobar'}
+        commit_msg => 'Disabled foobar'
     });
 
     cmp_deeply(
@@ -169,7 +169,7 @@ use_ok($class);
     );
 
     $command->commit_changes_in_repo({
-        commit_msg_coderef => sub {'Channel rename: quux --> baz'}
+        commit_msg => 'Channel rename: quux --> baz'
     });
 
     cmp_deeply(
@@ -211,7 +211,7 @@ use_ok($class);
     );
 
     $command->commit_changes_in_repo({
-        commit_msg_coderef => sub {'Delete foobar'}
+        commit_msg => 'Delete foobar'
     });
 
     cmp_deeply(

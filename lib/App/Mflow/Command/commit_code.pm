@@ -244,15 +244,13 @@ sub _get_remote_channel_list {
 
 sub commit_changes_in_repo {
     my $self = shift;
-    my ($commit_msg_coderef) = validated_list(
+    my ($commit_msg) = validated_list(
         \@_,
-        commit_msg_coderef => {
-            isa     => 'CodeRef',
-            default => sub {'Export Mirth channels'},
+        commit_msg => {
+            isa     => 'Str',
+            default => 'Export Mirth channels',
         },
     );
-
-    my $commit_msg = $commit_msg_coderef->();
 
     local $CWD = $self->code_checkout_path;
     svn_commit({ commit_msg => $commit_msg });

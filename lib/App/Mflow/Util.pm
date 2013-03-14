@@ -108,7 +108,7 @@ sub svn_checkout {
         to_path => { isa => AbsDir, coerce => 1 },
     );
 
-    infof( 'Checking out repoistory at %s', $to_path );
+    infof( 'Checking out repository at %s', $to_path );
     __PACKAGE__->_svn->checkout(
         $url,
         $to_path->stringify,

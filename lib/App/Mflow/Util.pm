@@ -212,27 +212,16 @@ sub svn_mkdir {
 }
 
 sub svn_add {
-    my ( $paths ) = validated_list(
+    my ( $path ) = validated_list(
         \@_,
-        paths => { isa => 'ArrayRef' },
+        path => { isa => AbsFile, coerce => 1 },
     );
 
-    debugf("wd: $CWD");
-
-    my @cmd = ( 'svn', 'add', @$paths );
-    debugf( '$ %s', ( join ' ', @cmd ) );
-
-    my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
-    if ( $success ) {
-        debugf( 'svn add: %s', ( join ' ', $stdout, $stderr ) );
-        return 1;
-    }
-    else {
-        croakf( "svn add: $stderr" );
-        return 0;
-    }
-
-    return 0;
+    debugf( 'Staging file for add: %s', $path );
+    __PACKAGE__->_svn->add(
+        $path->stringify,
+        1
+    );
 }
 
 sub svn_remove {

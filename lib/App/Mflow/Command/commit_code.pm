@@ -101,7 +101,7 @@ sub stage_repo {
             local $CWD = $self->code_checkout_path;
 
             my $file = $self->code_checkout_path->file($filename);
-            svn_add({ paths => [ $file->relative ] });
+            svn_add({ path => $file->relative });
         }
     }
 }

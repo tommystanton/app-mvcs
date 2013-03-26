@@ -257,12 +257,10 @@ sub _setup_repo {
     }
 
     local $CWD = $repo_checkout_dir->stringify;
-    svn_add({
-        paths => [qw(
-            foobar.xml quux.xml
-            global_scripts.xml code_templates.xml
-        )]
-    });
+    svn_add({ path => $_ })
+        for qw( foobar.xml quux.xml
+                global_scripts.xml code_templates.xml );
+
     svn_commit({ commit_msg => 'Initial commit of Mirth code' });
 }
 

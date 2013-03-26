@@ -1,4 +1,7 @@
 package App::Mflow;
+
+# ABSTRACT: Facilitate workflow in using Mirth Connect
+
 use Moose;
 use namespace::autoclean;
 

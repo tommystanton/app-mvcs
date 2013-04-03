@@ -225,13 +225,13 @@ sub svn_add {
 }
 
 sub svn_remove {
-    my ($targets) = validated_list(
+    my ($paths) = validated_list(
         \@_,
-        targets => { isa => 'ArrayRef' },
+        paths => { isa => 'ArrayRef' },
     );
 
     __PACKAGE__->_svn->delete(
-        @$targets,
+        @$paths,
         0
     );
 }

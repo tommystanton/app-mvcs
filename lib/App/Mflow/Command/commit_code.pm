@@ -136,7 +136,7 @@ sub _do_remove_for_channel_delete {
     );
 
     local $CWD = $self->code_checkout_path;
-    svn_remove( { targets => [ $file->stringify ] } );
+    svn_remove( { paths => [ $file->stringify ] } );
 }
 
 # A renamed channel is effectively a file move: the filename changes,

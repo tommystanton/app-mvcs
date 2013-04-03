@@ -252,34 +252,35 @@ sub svn_move {
 }
 
 sub svn_commit {
-    my ( $paths, $commit_msg, $dry_run ) = validated_list(
+    my ( $paths, $commit_msg ) = validated_list(
         \@_,
-        paths      => { isa => 'ArrayRef', optional => 1, default => [], },
+        paths      => {
+            isa     => 'ArrayRef', # TODO Somehow use an ArrayRef of
+                                   # AbsFile's (with coercion)
+            default => ['.'], },   # (Depends on working directory)
         commit_msg => { isa => 'Str' },
-        dry_run    => { isa => 'Bool', optional => 1 },
     );
-
-    if ($dry_run) {
-        infof( "svn commit: %s", ( join " ", @$paths ) );
-        return 1;
-    }
 
     debugf("wd: $CWD");
 
-    my @cmd = ( 'svn', 'commit', '-m', $commit_msg, @$paths );
-    debugf( '$ %s', ( join ' ', @cmd[0..1], @cmd[4..$#cmd] ) );
+    # (Manual coercion)
+    $paths =
+        [ map { Path::Class::File->new($_)->absolute->stringify }
+            @$paths ];
 
-    my ( $stdout, $stderr, $success, $exit_code ) = capture_exec(@cmd);
-    if ( $success ) {
-        debugf( 'svn commit: %s', ( join ' ', $stdout, $stderr ) );
-        return 1;
-    }
-    else {
-        croakf( "svn commit: $stderr" );
-        return 0;
+    __PACKAGE__->_svn->log_msg(
+        # Found this magical syntax at:
+        # https://metacpan.org/source/GRICHTER/SVN-Push-0.02/Push.pm#L449
+        sub { ${ $_[0] } = $commit_msg }
+    );
+
+    my $commit_info = __PACKAGE__->_svn->commit( $paths, 0 );
+    if ( not defined $commit_info ) {
+        croakf( 'Something went wrong while trying to commit' );
     }
 
-    return 0;
+    my $revision = $commit_info->revision;
+    infof( 'Committed revision %d.', $revision );
 }
 
 sub svn_revert {

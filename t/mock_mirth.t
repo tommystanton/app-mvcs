@@ -70,7 +70,7 @@ use_ok($class);
         subhashof(
             svn_status( { path => $command->code_checkout_path } )
         ),
-        'Channel files are exported and unversioned to Subversion'
+        'Channel files are present and appear unversioned to Subversion'
     );
 
     $command->stage_repo;

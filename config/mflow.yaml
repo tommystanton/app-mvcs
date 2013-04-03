@@ -4,7 +4,6 @@ mirth:
   port: ~
   username: ~
   password: ~
-repository:
-  type: ~
+svn:
   url: ~
 # vim: syntax=:softtabstop=2:shiftwidth=2

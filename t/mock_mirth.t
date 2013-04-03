@@ -279,8 +279,7 @@ sub _generate_test_config_yaml_file {
             username => 'admin',
             password => 'admin',
         },
-        repository => {
-            type => 'svn',
+        svn => {
             url  => $svn_repo->url,
         }
     };

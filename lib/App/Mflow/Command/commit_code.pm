@@ -55,7 +55,7 @@ sub checkout_repo {
     my ($self) = @_;
 
     svn_checkout({
-        url     => $self->config->{repository}->{url},
+        url     => $self->config->{svn}->{url},
         to_path => $self->code_checkout_path,
     });
 }

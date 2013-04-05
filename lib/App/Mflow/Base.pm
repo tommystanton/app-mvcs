@@ -1,4 +1,11 @@
 package App::Mflow::Base;
+
+=head1 NAME
+
+App::Mflow::Base - Provide a base class for shared configuration of Mflow
+
+=cut
+
 use Moose;
 use namespace::autoclean;
 
@@ -6,6 +13,33 @@ use MooseX::Types::Tied::Hash::IxHash ':all';
 
 use Path::Class ();
 use Config::ZOMG ();
+
+=head1 ATTRIBUTES
+
+=head2 config
+
+Contains a hashref which is populated using L<Config::ZOMG>.  The config
+file to be consumed should be a YAML file that looks like this:
+
+    ---
+    mirth:
+      server: my-mirth.example.com
+      port: 8443
+      username: admin
+      password: my_password
+    svn:
+      url: file:///path/to/a/repo
+
+The default path that is checked is in C<config/> in the distribution.
+The name of the config file should be C<mflow.yaml>, or can be
+overridden with C<mflow_local.yaml>.  Additionally, the path to the
+config file can be overridden via the environment variable
+C<MFLOW_CONFIG>.
+
+The C<mirth> section of the config is used internally with
+L<WebService::Mirth>.
+
+=cut
 
 has config => (
     isa        => 'HashRef',
@@ -30,6 +64,17 @@ sub _build_config {
 
     return $config->load;
 }
+
+=head2 base_commands
+
+Contains a hashref of supported commands, where the key is a description
+(ie. "Commit Mirth Code") and the value is the name of the command (ie.
+"commit_code").
+
+This is used by L<App::Mflow::TUI> for the main menu of the text-based
+user interface for Mflow.
+
+=cut
 
 has base_commands => (
     is         => 'ro',

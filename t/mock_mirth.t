@@ -31,8 +31,6 @@ _monkey_patch_httpd();
 
 my $svn_repo = Test::SVN::Repo->new;
 
-#_setup_repo( { svn_repo => $svn_repo } );
-
 my $config_file = File::Temp->new(
     DIR      => $t_lib_dir->stringify,
     TEMPLATE => 'mflow_test-XXXX',
@@ -226,43 +224,6 @@ use_ok($class);
 }
 
 done_testing;
-
-sub _setup_repo {
-    my ($args) = @_;
-    my $svn_repo = $args->{svn_repo};
-
-    my $path_to_checkout = File::Temp->newdir(
-            $t_lib_dir->subdir('svn_fixture_checkout-XXXX')->stringify
-        );
-    my $repo_checkout_dir =
-        Path::Class::Dir->new( $path_to_checkout->dirname );
-
-    svn_checkout({
-        url     => $svn_repo->url,
-        to_path => $repo_checkout_dir->stringify,
-    });
-
-    my $mirth_channel_fixtures = {
-        foobar         => _get_channel_fixture('foobar'),
-        quux           => _get_channel_fixture('quux'),
-        global_scripts => _get_global_scripts_fixture(),
-        code_templates => _get_code_templates_fixture(),
-    };
-
-    foreach my $channel ( keys %$mirth_channel_fixtures ) {
-        my $file = $repo_checkout_dir->file("${channel}.xml");
-
-        my $content = $mirth_channel_fixtures->{$channel};
-        $file->spew($content);
-    }
-
-    local $CWD = $repo_checkout_dir->stringify;
-    svn_add({ path => $_ })
-        for qw( foobar.xml quux.xml
-                global_scripts.xml code_templates.xml );
-
-    svn_commit({ commit_msg => 'Initial commit of Mirth code' });
-}
 
 sub _generate_test_config_yaml_file {
     my ($args)   = @_;

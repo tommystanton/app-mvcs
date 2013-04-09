@@ -184,7 +184,7 @@ use_ok($class);
 
 {
     $Delete_foobar_Channel = 1;
-    diag('Deleting the quux channel this time...');
+    diag('Deleting the foobar channel this time...');
     my $httpd = _get_httpd();
 
     _generate_test_config_yaml_file({

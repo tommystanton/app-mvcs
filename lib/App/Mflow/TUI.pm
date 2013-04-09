@@ -11,6 +11,7 @@ use App::Mflow::Util -svn;
 sub run {
     my ($self) = @_;
 
+    $self->show_welcome();
     my $choice = $self->choose_command();
 
     # TODO Put in attribute?
@@ -26,11 +27,24 @@ sub run {
     }
 }
 
+sub show_welcome {
+    my ($self) = @_;
+
+    print <<EOT;
+Welcome to Mflow.
+EOT
+}
+
 sub choose_command {
     my ($self) = @_;
 
     my $commands = $self->base_commands;
-    my $choice = choose( "Which command?", keys %$commands );
+
+    print <<EOT;
+  Use the arrow keys (or hjkl) to move the cursor over a selection, then
+  press enter to choose it.  Quit with q.
+EOT
+    my $choice = choose( 'Choose a command:', keys %$commands );
 
     my $command;
     if ( defined $choice ) {

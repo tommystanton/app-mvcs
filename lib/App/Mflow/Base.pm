@@ -89,11 +89,11 @@ sub _build_base_commands {
     my $commands = [
         'Commit Mirth code'    => 'commit_code',
 
-        # TODO Consolidate into "Make a tag," then prompt again for
-        # which environment
-        'Make a Staging tag'    => 'make_staging_tag',
-        'Make a UAT tag'        => 'make_uat_tag',
-        'Make a Production tag' => 'make_prod_tag',
+        ## TODO Consolidate into "Make a tag," then prompt again for
+        ## which environment
+        #'Make a Staging tag'    => 'make_staging_tag',
+        #'Make a UAT tag'        => 'make_uat_tag',
+        #'Make a Production tag' => 'make_prod_tag',
     ];
 
     return $commands;

@@ -1,6 +1,6 @@
 package App::MVCS;
 
-# ABSTRACT: Automate version control with Mirth Connect
+# ABSTRACT: Put Mirth Connect settings in a VCS
 
 use Moose;
 use namespace::autoclean;

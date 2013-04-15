@@ -15,9 +15,9 @@ my $commands = $class->new->base_commands;
 eq_or_diff(
     [ keys %$commands ], # (Verifying that IxHash is working)
     [ 'Commit Mirth code',
-      'Make a Staging tag',
-      'Make a UAT tag',
-      'Make a Production tag',
+      #'Make a Staging tag',
+      #'Make a UAT tag',
+      #'Make a Production tag',
     ],
     'Order of command options is correct'
 );

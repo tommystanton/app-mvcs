@@ -1,4 +1,7 @@
 package App::MVCS::Util;
+
+# ABSTRACT: Provide utility functions for MVCS
+
 use Moose;
 
 use MooseX::Params::Validate qw( validated_list );

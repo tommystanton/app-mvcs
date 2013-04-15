@@ -1,4 +1,7 @@
 package App::MVCS::Command;
+
+# ABSTRACT: Provide a base class for commands
+
 use Moose;
 use namespace::autoclean;
 

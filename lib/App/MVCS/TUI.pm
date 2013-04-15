@@ -1,4 +1,7 @@
 package App::MVCS::TUI;
+
+# ABSTRACT: Provide a text-based user interface
+
 use Moose;
 use namespace::autoclean;
 

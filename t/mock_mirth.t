@@ -18,7 +18,7 @@ use File::Temp ();
 use YAML::Syck qw( Dump );
 use Mojo::DOM ();
 
-use App::Mflow::Util -svn;
+use App::MVCS::Util -svn;
 
 # TODO Check if "svn" is in $PATH (via App::Info?) and SKIP if so
 
@@ -33,14 +33,14 @@ my $svn_repo = Test::SVN::Repo->new;
 
 my $config_file = File::Temp->new(
     DIR      => $t_lib_dir->stringify,
-    TEMPLATE => 'mflow_test-XXXX',
+    TEMPLATE => 'mvcs_test-XXXX',
     SUFFIX   => '.yaml',
 );
 
-$ENV{MFLOW_CONFIG} = $config_file->filename;
+$ENV{MVCS_CONFIG} = $config_file->filename;
 
 my $command_name = "commit_code";
-my $class        = "App::Mflow::Command::${command_name}";
+my $class        = "App::MVCS::Command::${command_name}";
 
 use_ok($class);
 

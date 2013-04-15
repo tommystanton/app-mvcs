@@ -1,40 +1,34 @@
-package App::Mflow;
+package App::MVCS;
 
-# ABSTRACT: Facilitate workflow in using Mirth Connect
-
-=head1 NAME
-
-App::Mflow - Facilitate workflow in using Mirth Connect
-
-=cut
+# ABSTRACT: Automate version control with Mirth Connect
 
 use Moose;
 use namespace::autoclean;
 
-extends 'App::Mflow::Base';
+extends 'App::MVCS::Base';
 
 use Class::Load qw( load_class );
 
 =head1 SYNOPSIS
 
-    use App::Mflow;
+    use App::MVCS;
 
-    my $mflow = App::Mflow->new;
+    my $mvcs = App::MVCS->new;
 
-    $mflow->run('commit_code');
+    $mvcs->run('commit_code');
 
 =head1 DESCRIPTION
 
 This class is used to delegate to supported commands.  See
-L<App::Mflow::Base> for a list of supported commands.
+L<App::MVCS::Base> for a list of supported commands.
 
-The commands are repesented in the C<App::Mflow::Command::*> namespace.
+The commands are repesented in the C<App::MVCS::Command::*> namespace.
 
 =head1 METHODS
 
 =head2 run
 
-    $mflow->run('commit_code');
+    $mvcs->run('commit_code');
 
 Given a command name, simply calls the C<run> method of the appropriate
 class.
@@ -51,7 +45,7 @@ sub run {
 
 =head2 get_command
 
-    $command = $mflow->get_command('commit_code');
+    $command = $mvcs->get_command('commit_code');
 
 Given a command name, returns an object of the appropriate class.
 

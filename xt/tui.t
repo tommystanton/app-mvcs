@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 use Test::Differences;
 
-my $class = 'App::Mflow::TUI';
+my $class = 'App::MVCS::TUI';
 
 use_ok($class);
 

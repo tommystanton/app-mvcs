@@ -1,4 +1,4 @@
-package App::Mflow::Util;
+package App::MVCS::Util;
 use Moose;
 
 use MooseX::Params::Validate qw( validated_list );

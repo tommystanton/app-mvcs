@@ -1,12 +1,12 @@
-package App::Mflow::TUI;
+package App::MVCS::TUI;
 use Moose;
 use namespace::autoclean;
 
-extends 'App::Mflow::Base';
+extends 'App::MVCS::Base';
 
 use Term::Clui;
 
-use App::Mflow::Util -svn;
+use App::MVCS::Util -svn;
 
 sub run {
     my ($self) = @_;
@@ -15,15 +15,15 @@ sub run {
     my $choice = $self->choose_command();
 
     # TODO Put in attribute?
-    my $mflow = App::Mflow->new;
+    my $mvcs = App::MVCS->new;
 
     if ( $choice eq 'commit_code' ) {
-        my $command = $mflow->get_command($choice);
+        my $command = $mvcs->get_command($choice);
 
         _prompt_through_commit_code($command);
     }
     else {
-        $mflow->run($choice);
+        $mvcs->run($choice);
     }
 }
 
@@ -31,7 +31,7 @@ sub show_welcome {
     my ($self) = @_;
 
     print <<EOT;
-Welcome to Mflow.
+Welcome to MVCS: Mirth Version Control System
 EOT
 }
 

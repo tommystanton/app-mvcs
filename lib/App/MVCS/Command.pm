@@ -1,8 +1,8 @@
-package App::Mflow::Command;
+package App::MVCS::Command;
 use Moose;
 use namespace::autoclean;
 
-extends 'App::Mflow::Base';
+extends 'App::MVCS::Base';
 
 __PACKAGE__->meta->make_immutable;
 

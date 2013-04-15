@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use App::Mflow;
+use App::MVCS;
 
 use Getopt::Long;
 use English qw( -no_match_vars );
@@ -18,17 +18,17 @@ check_args();
 
 # TODO Only support TUI?
 if ( scalar @ARGV ) {
-    my $mflow = App::Mflow->new;
-    $mflow->run(@ARGV);
+    my $mvcs = App::MVCS->new;
+    $mvcs->run(@ARGV);
 }
 else {
     start_tui();
 }
 
 sub start_tui {
-    require App::Mflow::TUI;
+    require App::MVCS::TUI;
 
-    my $tui = App::Mflow::TUI->new;
+    my $tui = App::MVCS::TUI->new;
     $tui->run;
 }
 
@@ -45,7 +45,7 @@ sub get_usage {
 
     my $usage = <<EOT;
 Usage: $program_name [COMMAND]
-If COMMAND is specified, run the specified mflow command.  Otherwise,
+If COMMAND is specified, run the specified MVCS command.  Otherwise,
 start the text-user interface for interactive use.
 
   -h,  --help                print this help information

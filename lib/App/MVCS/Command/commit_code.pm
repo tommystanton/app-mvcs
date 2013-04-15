@@ -1,8 +1,8 @@
-package App::Mflow::Command::commit_code;
+package App::MVCS::Command::commit_code;
 use Moose;
 use namespace::autoclean;
 
-extends 'App::Mflow::Command';
+extends 'App::MVCS::Command';
 
 # ABSTRACT: Export channels from a Mirth Connect box, commit to repository
 
@@ -15,7 +15,7 @@ use Path::Class ();
 use File::chdir;
 use Log::Minimal qw( infof );
 
-use App::Mflow::Util -svn;
+use App::MVCS::Util -svn;
 
 has code_checkout_path => (
     is      => 'ro',

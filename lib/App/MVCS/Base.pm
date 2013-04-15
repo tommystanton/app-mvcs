@@ -1,10 +1,6 @@
-package App::Mflow::Base;
+package App::MVCS::Base;
 
-=head1 NAME
-
-App::Mflow::Base - Provide a base class for shared configuration of Mflow
-
-=cut
+# ABSTRACT: Provide a base class for shared configuration of MVCS
 
 use Moose;
 use namespace::autoclean;
@@ -31,10 +27,10 @@ file to be consumed should be a YAML file that looks like this:
       url: file:///path/to/a/repo
 
 The default path that is checked is in C<config/> in the distribution.
-The name of the config file should be C<mflow.yaml>, or can be
-overridden with C<mflow_local.yaml>.  Additionally, the path to the
+The name of the config file should be C<mvcs.yaml>, or can be
+overridden with C<mvcs_local.yaml>.  Additionally, the path to the
 config file can be overridden via the environment variable
-C<MFLOW_CONFIG>.
+C<MVCS_CONFIG>.
 
 The C<mirth> section of the config is used internally with
 L<WebService::Mirth>.
@@ -57,9 +53,9 @@ sub _build_config {
                                           ->subdir('config')->stringify;
 
     my $config = Config::ZOMG->new(
-        name       => 'mflow',
+        name       => 'mvcs',
         path       => $default_filepath,
-        env_lookup => 'MFLOW_CONFIG',
+        env_lookup => 'MVCS_CONFIG',
     );
 
     return $config->load;
@@ -71,8 +67,8 @@ Contains a hashref of supported commands, where the key is a description
 (ie. "Commit Mirth Code") and the value is the name of the command (ie.
 "commit_code").
 
-This is used by L<App::Mflow::TUI> for the main menu of the text-based
-user interface for Mflow.
+This is used by L<App::MVCS::TUI> for the main menu of the text-based
+user interface for MVCS.
 
 =cut
 

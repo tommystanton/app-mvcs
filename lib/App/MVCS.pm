@@ -61,6 +61,13 @@ sub get_command {
     return $class->new;
 }
 
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to the Informatics Corporation of America (ICA) for sponsoring the
+development of this module.
+
+=cut
+
 __PACKAGE__->meta->make_immutable;
 
 1;
